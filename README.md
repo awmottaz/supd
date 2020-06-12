@@ -22,13 +22,6 @@ This app is under development.
 - [ ] `-n, --num N` flag selects the last `N` updates
 - [ ] `-s, --since DATE` flag selects all updates between `DATE` and today, inclusive
 
-#### internals
-
-- [ ] better comments
-- [ ] code review from an experienced Go dev
-- [ ] automated versioning
-- [ ] automated deployments
-
 ### Nice-to-have features
 
 #### main command
@@ -38,3 +31,10 @@ This app is under development.
 #### `print` sub-command
 
 - [ ] `-c, --clipboard` flag copies output to clipboard
+
+### Other
+
+- [ ] better comments
+- [ ] code review from an experienced Go dev
+- [ ] automated versioning
+- [ ] automated deployments
