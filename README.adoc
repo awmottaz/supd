@@ -30,6 +30,8 @@ This app is under development.
 
 * [ ] better comments
 * [ ] code review from an experienced Go dev
+* [ ] automated versioning
+* [ ] automated deployments
 
 === Nice-to-have features
 
