@@ -11,7 +11,6 @@ This app is under development.
 - [x] basic app can configure the file containing the scrum updates (`-f, --file` flag)
 - [ ] prompt for today's plan
 - [ ] prompt for completed tasks
-- [ ] prompt for note with `-t, --note` flag
 - [ ] `-e, --edit` flag opens the update file in `$EDITOR`
 
 #### `print` sub-command
@@ -27,6 +26,7 @@ This app is under development.
 #### main command
 
 - [ ] pretty help text (modify Usage)
+- [ ] prompt for note with `-t, --note` flag
 
 #### `print` sub-command
 
