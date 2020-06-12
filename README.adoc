@@ -1,0 +1,71 @@
+= supd
+Tony Mottaz <tony@mottaz.dev>
+v0.1 2020-06-11
+
+== Introduction
+
+`supd` is a CLI app I made for myself to track my daily updates for work. Every day I like to track my plan for the day and the things I actually did that day. This program is a simple tool which saves my daily updates to a JSON file. The JSON file is simple:
+
+.2020-06-11.json
+[source,json]
+----
+{
+    "plan": "Do some things and accomplish stuff",
+    "completed": [
+        "Did one thing",
+        "Did another thing"
+    ],
+    "notes": [
+        "Learned about stuff",
+        "Meetings were a drag today"
+    ]
+}
+----
+
+Each update file is named for the date of the update in `yyyy-mm-dd` format. The value of the JSON in each file is an object of the shape
+
+[source,typescript]
+----
+{
+  "plan": string
+  "completed": string[]
+  "notes": string[]
+}
+----
+
+The files are saved in `$HOME/supd`.
+
+== API Design
+
+At the time of writing, the program has not yet been developed. The following CLI usage string is the intended design for the CLI app.
+
+....
+$ supd -help
+Usage: supd [OPTION]
+       supd print [PRINT OPTION]...
+
+Track your daily scrum updates.
+
+Called without a sub-command, supd will prompt for today's plan if you
+have not yet set it. Otherwise, it prompts for a completed task.
+
+The print sub-command will print selected updates to the console.
+Called with no options, it will pretty-print today's update. See PRINT
+OPTIONS below for more printing options.
+
+OPTION
+These options only apply to supd called with no sub-commands.
+    -t, -note   Prompts for a note instead of a completed task
+    -e, -edit   Opens today's update in $EDITOR
+
+PRINT OPTION
+    -json   Print the updates in JSON format instead of pretty-printing
+
+Each of the following options may be provided multiple times to select
+a set of updates. All of the selected updates will be printed in
+chronological order.
+    -d, -date DATE      Selects the specified date in yyyy-mm-dd format
+    -n, -num N          Selects the last N non-empty updates.
+    -s, -since DATE     Selects all updates between DATE and today,
+                        inclusive
+....
