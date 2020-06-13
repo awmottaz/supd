@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path"
 )
 
 // Version is the current version of the app.
@@ -20,6 +22,8 @@ func main() {
 	case "help":
 		usage()
 		os.Exit(0)
+	case "edit":
+		os.Exit(edit())
 	default:
 		fmt.Printf("unknown command \"%s\"\n", os.Args[1])
 		usage()
@@ -37,8 +41,53 @@ func usage() {
 	fmt.Println(`Usage:
 
 	supd [options]
+	supd <command>
 
 Options:
 
-	-h    display these help instructions`)
+	-h    display these help instructions
+
+Commands:
+
+	edit    open the updates file for editing`)
+}
+
+func getUpdatesFile() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return path.Join(home, "supd.json"), nil
+}
+
+func edit() int {
+	file, err := getUpdatesFile()
+	if err != nil {
+		fmt.Println(err.Error())
+		return 1
+	}
+
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vim"
+	}
+
+	editorEx, err := exec.LookPath(editor)
+	if err != nil {
+		fmt.Println(err.Error())
+		return 1
+	}
+
+	cmd := exec.Command(editorEx, file)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println(err.Error())
+		return 1
+	}
+
+	return 0
 }
