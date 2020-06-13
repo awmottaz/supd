@@ -1,0 +1,7 @@
+# CHANGELOG
+
+## v0.2 (2020-06-13)
+
+### Features
+
+- Added an `edit` command which opens the updates file in `$EDITOR`
