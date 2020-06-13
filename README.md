@@ -1,6 +1,6 @@
 `supd` (**s**crum **upd**ate) is a CLI app I made for myself to track my daily updates for work. Every day I like to track my plan for the day and the things I actually did that day.
 
-This app is under development. Progress to a v1 release is being tracked in [this project](https://github.com/awmottaz/supd/projects/1).
+This app is under development. Progress to a v1 release is being tracked in [this issue](https://github.com/awmottaz/supd/issues/4).
 
 - [Installation](#installation)
   - [Download](#download)
