@@ -2,6 +2,9 @@
 
 This app is under development. Progress to a v1 release is being tracked in [this project](https://github.com/awmottaz/supd/projects/1).
 
+- [Installation](#installation)
+  - [Download](#download)
+  - [Build](#build)
 - [Usage](#usage)
   - [`help`: App documentation](#help-app-documentation)
   - [`version`: Version information](#version-version-information)
@@ -13,7 +16,25 @@ This app is under development. Progress to a v1 release is being tracked in [thi
     - [Print Order](#print-order)
     - [Examples](#examples)
 
+## Installation
+
+### Download
+
+You can download a pre-built binary from the [releases](https://github.com/awmottaz/supd/releases).
+
+### Build
+
+Alternatively, clone this repo and install with
+
+```sh
+make install
+```
+
+You must have Go 1.11+ installed with modules enabled for this to work. [See installation instructions for Go.](http://golang.org/doc/install.html)
+
 ## Usage
+
+Run `supd help` for current usage instructions.
 
 **The following usage instructions are not finalized.** These instructions currently serve as a sketch of the app design for my own reference. After the v1 release, these will become the documentation instead of a design sketch.
 
@@ -29,12 +50,17 @@ Usage:
     supd help [<command>]
     supd [global_options] <command> [arguments]
 
+Summary:
+    supd is a simple command line app to help you track your daily
+    updates, the plan you have for the day and the tasks you actually
+    completed. These updates are all saved in a single JSON file (see
+    "Environment" below).
+
 Environment:
 
-    If the SUPD_FILE environment variable is set to a valid file path,
-    then this file will be used for the updates file. The "-f" global
-    flag overrides this setting. If neither are set, "$HOME/supd.json"
-    is used.
+    If the SUPD_FILE environment variable is set, then this file will
+    be used for the updates file. The "-f" global flag overrides this
+    setting. If neither are set, "$HOME/supd.json" is used.
 
 Global options:
 
