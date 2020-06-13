@@ -16,9 +16,20 @@ func Run(args []string) int {
 		return 2
 	}
 
-	var upd Update
+	upd := New()
 
-	upd.Date = time.Now().Format("2006-01-02")
+	f, err := os.Open(app.updateFile)
+	if err != nil {
+		log.Println(err.Error())
+		return 1
+	}
+	defer f.Close()
+
+	err = upd.LoadToday(f)
+	if err != nil {
+		log.Println(err.Error())
+		return 1
+	}
 
 	err = prompt(&upd.Plan, "Plan for today")
 	if err != nil {
@@ -29,6 +40,10 @@ func Run(args []string) int {
 	fmt.Println(upd)
 
 	return 0
+}
+
+func today() string {
+	return time.Now().Format("2006-01-02")
 }
 
 // prompt shows the message to the user and saves their response to target.

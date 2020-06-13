@@ -1,6 +1,11 @@
 package cli
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+)
 
 // Update represents an update for a given day.
 type Update struct {
@@ -10,6 +15,51 @@ type Update struct {
 	Notes     []string `json:"notes"`
 }
 
-func (upd Update) String() string {
-	return fmt.Sprintf("* %s\n\tPLAN\n\t%s", upd.Date, upd.Plan)
+// New creates a new Update for today.
+func New() *Update {
+	return &Update{
+		Date: today(),
+	}
 }
+
+func (upd Update) String() string {
+	return fmt.Sprintf("* %s\n\tPLAN\n\t%s\n\tCOMPLETED\n\t%s", upd.Date, upd.Plan, upd.Completed)
+}
+
+// LoadToday loads the data from today's update into upd. If it does not exist, then upd will be a
+// new Update for today.
+func (upd *Update) LoadToday(r io.Reader) error {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return err
+	}
+
+	updates := make([]Update, 0)
+	err = json.Unmarshal(b, &updates)
+	if err != nil {
+		return err
+	}
+
+	var ok bool
+	*upd, ok = find(updates, today())
+	if !ok {
+		upd = New()
+		return nil
+	}
+
+	return nil
+}
+
+func find(updates []Update, date string) (Update, bool) {
+	for _, u := range updates {
+		if u.Date == date {
+			return u, true
+		}
+	}
+
+	return Update{}, false
+}
+
+// func (upd *Update) Write(w io.ReadWriter) error {
+
+// }
