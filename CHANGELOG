@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.3 (2020-06-13)
+
+### Features
+
+- The `help` command is now empowered to show usage instructions for other sub-commands. You may now run `supd help edit` to see detailed usage instructions for the `supd edit` command. You can even run `supd help help`, though it's a bit redundant.
+
+### Removals
+
+- Removed the `-h` flag from the root command to show help. We will only support using the `supd help` command to view the help.
+
 ## v0.2 (2020-06-13)
 
 ### Features
