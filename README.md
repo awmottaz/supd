@@ -84,7 +84,7 @@ Use "supd help <command>" for more information about a command.
 
 ### `version`: Version information
 
-Call the `version` command for more detailed information.
+Call the `version` command for detailed build information.
 
 ```
 $ supd version
@@ -94,6 +94,22 @@ VERSION: 0.1
 HASH:    624801389b0fc71334db06dfeacc63ddead6609e
 DATE:    2020-06-13T14:22:13Z
 URL:     https://github.com/awmottaz/supd/releases/0.1
+```
+
+Flags can be used to retrieve individual pieces of information.
+
+```
+$ supd version -short
+0.1
+
+$ supd version -hash
+624801389b0fc71334db06dfeacc63ddead6609e
+
+$ supd version -date
+2020-06-13T14:22:13Z
+
+$ supd versoin -url
+https://github.com/awmottaz/supd/releases/tag/v0.1
 ```
 
 ### `edit`: Edit the updates file
