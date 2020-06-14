@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path"
+
+	"github.com/awmottaz/supd/cmd"
 )
 
 // Version is the current version of the app.
@@ -15,79 +15,27 @@ func main() {
 		summary()
 		os.Exit(0)
 	}
+
+	edit := &cmd.EditCmd{}
+
+	help := cmd.NewHelp()
+	help.Register("edit", edit)
+
 	switch os.Args[1] {
 	case "-h":
-		usage()
+		help.Usage()
 		os.Exit(0)
 	case "help":
-		usage()
-		os.Exit(0)
+		os.Exit(help.Run(os.Args[2:]))
 	case "edit":
-		os.Exit(edit())
+		os.Exit(edit.Run(os.Args[2:]))
 	default:
 		fmt.Printf("unknown command \"%s\"\n", os.Args[1])
-		usage()
+		help.Usage()
 		os.Exit(1)
 	}
 }
 
 func summary() {
-	fmt.Printf(`supd - version %s
-Run "supd help" for usage instructions
-`, Version)
-}
-
-func usage() {
-	fmt.Println(`Usage:
-
-	supd [options]
-	supd <command>
-
-Options:
-
-	-h    display these help instructions
-
-Commands:
-
-	edit    open the updates file for editing`)
-}
-
-func getUpdatesFile() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	return path.Join(home, "supd.json"), nil
-}
-
-func edit() int {
-	file, err := getUpdatesFile()
-	if err != nil {
-		fmt.Println(err.Error())
-		return 1
-	}
-
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		editor = "vim"
-	}
-
-	editorEx, err := exec.LookPath(editor)
-	if err != nil {
-		fmt.Println(err.Error())
-		return 1
-	}
-
-	cmd := exec.Command(editorEx, file)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println(err.Error())
-		return 1
-	}
-
-	return 0
+	fmt.Printf("supd - version %s\nRun \"supd help\" for usage instructions", Version)
 }
