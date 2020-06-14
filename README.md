@@ -108,7 +108,7 @@ $ supd version -hash
 $ supd version -date
 2020-06-13T14:22:13Z
 
-$ supd versoin -url
+$ supd version -url
 https://github.com/awmottaz/supd/releases/tag/v0.1
 ```
 
