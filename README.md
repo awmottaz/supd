@@ -8,6 +8,7 @@ This app is under development. Progress to a v1 release is being tracked in [thi
 - [Usage](#usage)
   - [`help`: App documentation](#help-app-documentation)
   - [`version`: Version information](#version-version-information)
+  - [`edit`: Edit the updates file](#edit-edit-the-updates-file)
   - [`plan`: Set and view your plan for today](#plan-set-and-view-your-plan-for-today)
   - [`did`: Track completed tasks](#did-track-completed-tasks)
   - [`note`: Take other notes](#note-take-other-notes)
@@ -34,21 +35,19 @@ You must have Go 1.11+ installed with modules enabled for this to work. [See ins
 
 ## Usage
 
-Run `supd help` for current usage instructions.
+Run `supd help` for current usage instructions and supported functions.
 
 **The following usage instructions are not finalized.** These instructions currently serve as a sketch of the app design for my own reference. After the v1 release, these will become the documentation instead of a design sketch.
 
 ### `help`: App documentation
 
-Use the `-h` flag or `help` command for usage instructions.
+Use the `help` command for usage instructions.
 
 ```
 $ supd help
 Usage:
 
-    supd [options]
-    supd help [<command>]
-    supd [global_options] <command> [arguments]
+    supd <command> [arguments]
 
 Summary:
     supd is a simple command line app to help you track your daily
@@ -62,19 +61,15 @@ Environment:
     be used for the updates file. The "-f" global flag overrides this
     setting. If neither are set, "$HOME/supd.json" is used.
 
-Global options:
+Options:
 
     -f    set the path for the updates file
 
-Options:
-
-    -h    display these help instructions
-    -v    print the version number
-    -e    open the updates file for editing (using $EDITOR)
-
-Other commands:
+Commands:
 
     did        document a task completed today
+    edit       open the updates file for editing
+    help       show this usage information
     note       save a note from today
     plan       set/view your plan for today
     show       print selected updates
@@ -95,6 +90,15 @@ VERSION: 0.1
 HASH:    624801389b0fc71334db06dfeacc63ddead6609e
 DATE:    2020-06-13T14:22:13Z
 URL:     https://github.com/awmottaz/supd/releases/0.1
+```
+
+### `edit`: Edit the updates file
+
+The `edit` command opens the updates file for you to edit manually. If set, it will use the `EDITOR` environment variable. Otherwise, it tries to use `vim`.
+
+```
+$ supd edit
+Opening /home/user/supd.json with vim...
 ```
 
 ### `plan`: Set and view your plan for today

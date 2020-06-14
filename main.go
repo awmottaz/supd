@@ -22,9 +22,6 @@ func main() {
 	help.Register("edit", edit)
 
 	switch os.Args[1] {
-	case "-h":
-		help.Usage()
-		os.Exit(0)
 	case "help":
 		os.Exit(help.Run(os.Args[2:]))
 	case "edit":

@@ -13,19 +13,21 @@ type HelpCmd struct {
 
 // NewHelp constructs a new HelpCmd that can register other Commands.
 func NewHelp() *HelpCmd {
-	return &HelpCmd{make(map[string]Command)}
+	help := &HelpCmd{make(map[string]Command)}
+	help.Register("help", help)
+	return help
+}
+
+// Summary is a description of what the help command does.
+func (help *HelpCmd) Summary() string {
+	return "show this usage information"
 }
 
 // Usage prints the usage instructions for this help command.
 func (help *HelpCmd) Usage() {
 	fmt.Println(`Usage:
 
-	supd [options]
 	supd <command>
-
-Options:
-
-	-h    display these help instructions
 
 Commands:`)
 	fmt.Println()
