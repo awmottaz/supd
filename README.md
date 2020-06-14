@@ -25,7 +25,7 @@ This app is under development. Progress to a v1 release is being tracked in [thi
 
 ### Download
 
-You can download a pre-built binary from the [releases](https://github.com/awmottaz/supd/releases).
+You can download a pre-built binary from the [releases](https://github.com/awmottaz/supd/releases). All pre-release binaries are built for Linux with amd64 architecture.
 
 ### Build
 
