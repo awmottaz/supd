@@ -1,3 +1,7 @@
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/awmottaz/supd?style=flat-square&logo=Go)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/awmottaz/supd?include_prereleases&logo=GitHub&style=flat-square)
+![License MIT](https://img.shields.io/badge/license-MIT-informational?style=flat-square)
+
 `supd` (**s**crum **upd**ate) is a CLI app I made for myself to track my daily updates for work. Every day I like to track my plan for the day and the things I actually did that day.
 
 This app is under development. Progress to a v1 release is being tracked in [this issue](https://github.com/awmottaz/supd/issues/4).
