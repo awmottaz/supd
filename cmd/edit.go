@@ -35,20 +35,21 @@ func (edit *EditCmd) Run(args []string) int {
 		return 1
 	}
 
-	file := path.Join(home, "supd.json")
+	filepath := path.Join(home, "supd.json")
 
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		editor = "vim"
 	}
 
+	fmt.Printf("Opening %s with %s...\n", filepath, editor)
 	editorEx, err := exec.LookPath(editor)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 1
 	}
 
-	cmd := exec.Command(editorEx, file)
+	cmd := exec.Command(editorEx, filepath)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
