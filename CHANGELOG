@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.4 (future)
+
+### Features
+
+- Added support for the `SUPD_FILE` environment variable for controlling where the updates file is located.
+
 ## v0.3 (2020-06-13)
 
 ### Features

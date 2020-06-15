@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
+
+	"github.com/awmottaz/supd/update"
 )
 
 // EditCmd is a Command that can open the updates file in an editor.
@@ -29,13 +30,11 @@ Summary:
 
 // Run executes the edit command.
 func (edit *EditCmd) Run(args []string) int {
-	home, err := os.UserHomeDir()
+	filepath, err := update.GetUpdatesFile()
 	if err != nil {
 		fmt.Println(err.Error())
 		return 1
 	}
-
-	filepath := path.Join(home, "supd.json")
 
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
