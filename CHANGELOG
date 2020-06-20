@@ -1,10 +1,11 @@
 # CHANGELOG
 
-## v0.4 (future)
+## v0.4 (2020-06-20)
 
 ### Features
 
 - Added support for the `SUPD_FILE` environment variable for controlling where the updates file is located.
+- Added `supd` command to set or view today's plan. See `supd help plan` for more details.
 
 ## v0.3 (2020-06-13)
 
