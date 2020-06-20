@@ -21,11 +21,18 @@ func (plan *PlanCmd) Summary() string {
 func (plan *PlanCmd) Usage() {
 	fmt.Println(`Usage:
 
-	supd plan
+	supd plan [STRING]
 
 Summary:
-	Use the plan command to see what your plan is for today. Prints
-	"<none>" if you have not yet set your plan for today.`)
+	Use the plan command to set or view your plan for today.
+
+	If called with no arguments, your plan for today will be printed to the
+	console. If there is no plan set for today, the string "<none>" will be
+	printed.
+
+	If called with STRING, your plan for today will be set to that value. If
+	there is already a plan set for today, you will be prompted to overwite
+	it.`)
 }
 
 // Run executes the plan command and returns the exit code.
@@ -36,62 +43,58 @@ func (plan *PlanCmd) Run(args []string) int {
 		return 1
 	}
 
-	collection, err := update.LoadUpdates(filename)
+	collection := &update.Collection{}
+
+	err = collection.LoadFrom(filename)
 	if err != nil {
 		fmt.Println(err.Error())
 		return 1
 	}
 
-	if len(args) > 1 {
+	switch len(args) {
+	// no args, print today's plan
+	case 0:
+		u, err := collection.FindByDate(update.Today())
+		if err == update.NotFound {
+			fmt.Println("<none>")
+			return 0
+		} else if err != nil {
+			fmt.Printf("getting today's plan: %s\n", err)
+			return 1
+		}
+		fmt.Println(u.Plan)
+		return 0
+
+	// one arg, write it to today's plan
+	case 1:
+		u, err := collection.FindByDate(update.Today())
+		if err != nil && err != update.NotFound {
+			fmt.Println("getting today's plan:", err)
+			return 1
+		}
+
+		// If an update already exists for today, get user's confirmation
+		// before overwriting it with a new plan.
+		if err != update.NotFound && !proceed(fmt.Sprintf("Plan for today already set to:\n\"%s\"\nOverwrite?", u.Plan)) {
+			fmt.Println("ignoring new plan")
+			return 0
+		}
+
+		collection.Add(update.Update{Date: update.Today(), Plan: args[0]})
+		err = collection.Commit(filename)
+		if err != nil {
+			fmt.Println("commiting updates:", err)
+			return 1
+		}
+
+		fmt.Println("plan written to", filename)
+		return 0
+
+	default:
 		fmt.Println("error: too many arguments")
 		plan.Usage()
 		return 1
 	}
-
-	if len(args) == 1 {
-		today := update.Today()
-
-		tu, err := collection.FindByDate(today)
-		if err != nil && err != update.NotFound {
-			fmt.Println(err.Error())
-			return 1
-		}
-
-		if err != update.NotFound {
-			fmt.Printf("Today's plan already set to\n\"%s\"\n", tu.Plan)
-			if !proceed("Overwrite?") {
-				fmt.Println("ignoring new plan")
-				return 0
-			}
-		}
-
-		u := update.Update{Date: today, Plan: args[0]}
-
-		collection.Add(u)
-		err = collection.Commit(filename)
-		if err != nil {
-			fmt.Println(err.Error())
-			return 1
-		}
-		fmt.Printf("plan written to %s\n", filename)
-		return 0
-	}
-
-	return showTodayPlan(collection)
-}
-
-func showTodayPlan(c update.Collection) int {
-	u, err := c.FindByDate(update.Today())
-	if err == update.NotFound {
-		fmt.Println("<none>")
-		return 0
-	} else if err != nil {
-		fmt.Println(err.Error())
-		return 1
-	}
-
-	fmt.Println(u)
-	return 0
 }
 
 // proceed asks for user confirmation before proceeding. Anything other than
