@@ -1,6 +1,7 @@
 package update
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -36,7 +37,7 @@ func (d Date) String() string {
 
 // MarshalJSON converts a date to a JSON string.
 func (d Date) MarshalJSON() ([]byte, error) {
-	s := fmt.Sprint(d)
+	s := fmt.Sprintf(`"%s"`, d)
 	return []byte(s), nil
 }
 
@@ -147,12 +148,58 @@ func LoadUpdates(filename string) (Collection, error) {
 
 // FindByDate finds the first update whose date matches date. A NotFound error
 // is returned if such an update is not present in the updateList.
-func FindByDate(collection Collection, date Date) (Update, error) {
-	sort.Sort(collection)
-	for _, update := range collection {
+func (c Collection) FindByDate(date Date) (Update, error) {
+	sort.Sort(c)
+	for _, update := range c {
 		if update.Date == date {
 			return update, nil
 		}
 	}
 	return Update{}, NotFound
+}
+
+// Commit writes the collection to filename as formatted JSON.
+func (c Collection) Commit(filename string) error {
+	sort.Sort(c)
+	data, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	err = json.Indent(&buf, data, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = buf.WriteTo(f)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Add adds the update to a collection. If the collection already includes an
+// update for the same date as u, it is overwritten with the new update.
+func (c *Collection) Add(update Update) {
+	n := -1
+	*c = append(*c, update)
+
+	for i, u := range *c {
+		if u.Date == update.Date {
+			n = i
+			break
+		}
+	}
+
+	if n >= 0 && n+1 < len(*c) {
+		*c = append((*c)[:n], (*c)[n+1:]...)
+	}
 }
