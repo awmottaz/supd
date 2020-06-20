@@ -24,6 +24,12 @@ func main() {
 	help.Register("plan", plan)
 
 	switch os.Args[1] {
+	case "-h", "-help", "--help":
+		help.Usage()
+		os.Exit(0)
+	case "-v", "-version", "--version":
+		fmt.Println(Version)
+		os.Exit(0)
 	case "help":
 		os.Exit(help.Run(os.Args[2:]))
 	case "edit":
