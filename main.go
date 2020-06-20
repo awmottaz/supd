@@ -17,15 +17,19 @@ func main() {
 	}
 
 	edit := &cmd.EditCmd{}
+	plan := &cmd.PlanCmd{}
 
 	help := cmd.NewHelp()
 	help.Register("edit", edit)
+	help.Register("plan", plan)
 
 	switch os.Args[1] {
 	case "help":
 		os.Exit(help.Run(os.Args[2:]))
 	case "edit":
 		os.Exit(edit.Run(os.Args[2:]))
+	case "plan":
+		os.Exit(plan.Run(os.Args[2:]))
 	default:
 		fmt.Printf("unknown command \"%s\"\n", os.Args[1])
 		help.Usage()
