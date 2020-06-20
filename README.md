@@ -127,7 +127,13 @@ Set your plan
 
 ```
 $ supd plan "I will complete task foo"
-plan written to /home/user/supd.json
+Plan written to /home/user/supd.json
+
+$ supd plan "A new plan"
+Plan already set to:
+"I will complete task foo"
+Overwrite? (y/N) y
+New plan written to /home/user/supd.json
 ```
 
 View your plan
@@ -141,7 +147,7 @@ Message if there is no plan set for today
 
 ```
 $ supd plan
-**no plan set for today**
+<none>
 ```
 
 ### `did`: Track completed tasks
