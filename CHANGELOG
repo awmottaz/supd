@@ -6,6 +6,8 @@
 
 - Added support for the `SUPD_FILE` environment variable for controlling where the updates file is located.
 - Added `supd` command to set or view today's plan. See `supd help plan` for more details.
+- Added support for `-h`, `-help`, and `--help` flags
+- Added support for `-v`, `-version`, and `--version` flags
 
 ## v0.3 (2020-06-13)
 
