@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -87,6 +88,33 @@ func (u Update) String() string {
 	return fmt.Sprintf("* Update %s *\nPLAN\n    %s", u.Date, u.Plan)
 }
 
+// Collection is a list of updates. It implements sort.Interface for []Update
+// based on the Date.
+type Collection []Update
+
+func (c Collection) Len() int {
+	return len(c)
+}
+
+func (c Collection) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
+func (c Collection) Less(i, j int) bool {
+	d1, d2 := c[i].Date, c[j].Date
+
+	if d1.Year < d2.Year {
+		return true
+	}
+	if d1.Month < d2.Month {
+		return true
+	}
+	if d1.Day < d2.Day {
+		return true
+	}
+	return false
+}
+
 // GetUpdatesFile returns the resolved absolute path to the user's updates file.
 // If the SUPD_FILE environment variable is set, then this path will be used.
 // Otherwise, this defaults to $HOME/supd.json.
@@ -105,7 +133,7 @@ func GetUpdatesFile() (string, error) {
 }
 
 // LoadUpdates parses the list of updates in filename.
-func LoadUpdates(filename string) ([]Update, error) {
+func LoadUpdates(filename string) (Collection, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -119,8 +147,9 @@ func LoadUpdates(filename string) ([]Update, error) {
 
 // FindByDate finds the first update whose date matches date. A NotFound error
 // is returned if such an update is not present in the updateList.
-func FindByDate(updateList []Update, date Date) (Update, error) {
-	for _, update := range updateList {
+func FindByDate(collection Collection, date Date) (Update, error) {
+	sort.Sort(collection)
+	for _, update := range collection {
 		if update.Date == date {
 			return update, nil
 		}
