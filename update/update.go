@@ -7,13 +7,26 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"strings"
 )
+
+// A DoneList is a list of completed tasks.
+type DoneList []string
+
+func (dl DoneList) String() string {
+	var out strings.Builder
+	for i, did := range dl {
+		fmt.Fprintf(&out, "%d: %s", i, did)
+	}
+	return out.String()
+}
 
 // An Update is a record of what you plan to do on a given day. The Date must be
 // a string in yyyy-mm-dd format.
 type Update struct {
-	Date Date   `json:"date"`
-	Plan string `json:"plan"`
+	Date Date     `json:"date"`
+	Plan string   `json:"plan"`
+	Done DoneList `json:"done"`
 }
 
 func (u Update) String() string {
