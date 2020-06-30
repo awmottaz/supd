@@ -10,10 +10,12 @@
       - [flags](#flags)
     - [`add` command](#add-command)
       - [flags](#flags-1)
-    - [`view` command](#view-command)
+    - [`rm` command](#rm-command)
       - [flags](#flags-2)
-    - [`edit` command](#edit-command)
+    - [`view` command](#view-command)
       - [flags](#flags-3)
+    - [`edit` command](#edit-command)
+      - [flags](#flags-4)
 
 This document describes the desired API and functionality of the `supd` tool. For documentation about what `supd` can actually do, run `supd help`.
 
@@ -130,6 +132,48 @@ note saved for 2020-06-30
 #### flags
 
 - `--date DATE` to set on a different date
+
+### `rm` command
+
+Delete things.
+
+**Delete an entire update**
+
+```
+$ supd rm update --date 2020-06-23
+This will remove all update information for June 23, 2020.
+Are you sure? [y/N] y
+Update for 2020-06-23 removed
+```
+
+**Delete your plan for today**
+
+```
+$ supd rm plan
+Remove plan for today, June 30? [y/N] y
+Plan for 2020-06-30 removed
+```
+
+**Delete a completed task**
+
+```
+$ supd rm done
+DONE on 2020-06-30:
+  1: Did a thing
+  2: Did another thing
+  3: Got stuck on a thing
+Remove which one? [1-3] 2
+Removing task 2: "Did another thing"
+Are you sure? [y/N] y
+Task removed for 2020-06-30
+```
+
+#### flags
+
+- `--date DATE` to target a specific date
+- `-y` to skip confirmation prompts
+- `-n NUMBER` if you already know the index of a task/note you wish to delete
+- `--all` to remove all tasks/notes
 
 ### `view` command
 
