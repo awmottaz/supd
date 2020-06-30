@@ -1,5 +1,6 @@
 VERSION = $$(cat VERSION)
-LDFLAGS = -X 'main.Version=$(VERSION)'
+HASH = $$(git rev-parse HEAD)
+LDFLAGS = -X 'github.com/awmottaz/supd/cmd.version=$(VERSION)' -X 'github.com/awmottaz/supd/cmd.hash=$(HASH)'
 
 # builds a fresh binary in $cwd
 supd: clean

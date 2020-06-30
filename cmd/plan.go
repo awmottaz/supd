@@ -1,119 +1,115 @@
+/*
+Copyright © 2020 Tony Mottaz <tony@mottaz.dev>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/awmottaz/supd/update"
+	"github.com/awmottaz/supd/internal/prompt"
+	"github.com/awmottaz/supd/internal/update"
+	"github.com/spf13/cobra"
 )
 
-// PlanCmd is a Command for interacting with today's plan.
-type PlanCmd struct{}
+var listPlan bool
+var removePlan bool
 
-// Summary returns the summary for the plan command.
-func (plan *PlanCmd) Summary() string {
-	return "view your plan for today"
+// planCmd represents the plan command
+var planCmd = &cobra.Command{
+	Use:   "plan",
+	Short: "set your plan for today",
+	Long:  `Use 'plan' to set or view your plan for today.`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if !listPlan && !removePlan && len(args) != 1 {
+			return fmt.Errorf("exactly 1 argument expected, received %d", len(args))
+		}
+		return nil
+	},
+	Run: runPlan,
 }
 
-// Usage prints the instructions for using the plan command.
-func (plan *PlanCmd) Usage() {
-	fmt.Println(`Usage:
+func init() {
+	rootCmd.AddCommand(planCmd)
 
-	supd plan [STRING]
-
-Summary:
-	Use the plan command to set or view your plan for today.
-
-	If called with no arguments, your plan for today will be printed to the
-	console. If there is no plan set for today, the string "<none>" will be
-	printed.
-
-	If called with STRING, your plan for today will be set to that value. If
-	there is already a plan set for today, you will be prompted to overwite
-	it.`)
+	planCmd.Flags().BoolVarP(&listPlan, "list", "l", false, "list your plan for today")
+	planCmd.Flags().BoolVarP(&removePlan, "remove", "r", false, "remove your plan for today")
 }
 
-// Run executes the plan command and returns the exit code.
-func (plan *PlanCmd) Run(args []string) int {
+func runPlan(cmd *cobra.Command, args []string) {
 	filename, err := update.GetUpdatesFile()
 	if err != nil {
-		fmt.Println(err.Error())
-		return 1
+		cmd.PrintErrln(err)
+		os.Exit(1)
 	}
 
 	collection := &update.Collection{}
 
 	err = collection.LoadFrom(filename)
 	if err != nil {
-		fmt.Println(err.Error())
-		return 1
+		cmd.PrintErrln(err)
+		os.Exit(1)
 	}
 
-	switch len(args) {
-	// no args, print today's plan
-	case 0:
-		u, err := collection.FindByDate(update.Today())
-		if err == update.NotFound {
-			fmt.Println("<none>")
-			return 0
-		} else if err != nil {
-			fmt.Printf("getting today's plan: %s\n", err)
-			return 1
-		}
-		fmt.Println(u.Plan)
-		return 0
+	upd, err := collection.FindByDate(update.Today())
+	if err != nil && err != update.NotFound {
+		cmd.PrintErrln("failed to read today's plan:", err)
+		os.Exit(1)
+	}
+	updFound := err != update.NotFound
 
-	// one arg, write it to today's plan
-	case 1:
-		u, err := collection.FindByDate(update.Today())
-		if err != nil && err != update.NotFound {
-			fmt.Println("getting today's plan:", err)
-			return 1
+	if listPlan {
+		if !updFound {
+			cmd.Println()
+			return
 		}
 
-		// If an update already exists for today, get user's confirmation
-		// before overwriting it with a new plan.
-		if err != update.NotFound && !proceed(fmt.Sprintf("Plan for today already set to:\n\"%s\"\nOverwrite?", u.Plan)) {
-			fmt.Println("ignoring new plan")
-			return 0
-		}
+		cmd.Println(upd.Plan)
+		return
+	}
 
-		collection.Add(update.Update{Date: update.Today(), Plan: args[0]})
-		err = collection.Commit(filename)
+	if removePlan {
+		cmd.Println("I cannot remove the plan, yet :(")
+		return
+	}
+
+	// If an update already exists for today, get user's permission to overwrite.
+	if updFound {
+		conf, err := prompt.Confirm(fmt.Sprintf("Plan for today already set to:\n\"%s\"\nOverwrite?", upd.Plan), false)
 		if err != nil {
-			fmt.Println("commiting updates:", err)
-			return 1
+			cmd.PrintErrln(err)
+			os.Exit(1)
 		}
-
-		fmt.Println("plan written to", filename)
-		return 0
-
-	default:
-		fmt.Println("error: too many arguments")
-		plan.Usage()
-		return 1
+		if !conf {
+			os.Exit(1)
+		}
 	}
-}
 
-// proceed asks for user confirmation before proceeding. Anything other than
-// explicit approval results in disapproval. The approval status is returned.
-func proceed(q string) bool {
-	fmt.Printf("%s (y/N) ", q)
-
-	scanner := bufio.NewReader(os.Stdin)
-	out, err := scanner.ReadString('\n')
+	collection.Add(update.Update{Date: update.Today(), Plan: args[0]})
+	err = collection.Commit(filename)
 	if err != nil {
-		return false
+		cmd.PrintErrln("failed to commit update:", err)
+		os.Exit(1)
 	}
 
-	out = strings.Replace(out, "\n", "", -1)
-
-	switch strings.ToLower(out) {
-	case "y", "yes":
-		return true
-	default:
-		return false
-	}
+	cmd.Println("plan written to", filename)
 }
