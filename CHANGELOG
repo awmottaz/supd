@@ -5,6 +5,12 @@
 ### Features
 
 - Cleaner, consistent interface
+- `set plan` supports `--force` to overwrite
+
+### Breaking Changes
+
+- `plan` is now `set plan`
+- `set plan` does not prompt for overwrite
 
 ### Refactored
 
