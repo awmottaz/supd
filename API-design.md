@@ -3,6 +3,7 @@
 - [supd API Design](#supd-api-design)
   - [Primary functions](#primary-functions)
   - [Updates data](#updates-data)
+  - [Viewing an update](#viewing-an-update)
   - [CLI API](#cli-api)
     - [Config](#config)
     - [Global options](#global-options)
@@ -70,6 +71,14 @@ Here is a sample updates file:
 }
 ```
 
+## Viewing an update
+
+When viewing an update, you usually want the following information:
+
+- Your plan from today's entry
+- Your done list from the previous entry
+- Your notes from the previous entry and today's entry
+
 ## CLI API
 
 ### Config
@@ -109,6 +118,7 @@ plan updated for 2020-06-30
 
 #### flags
 
+- `--force` overwrite plan
 - `--date DATE` to set on a different date
 
 ### `add` command
