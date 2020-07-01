@@ -6,6 +6,7 @@
 
 - Cleaner, consistent interface
 - `set plan` supports `--force` to overwrite
+- `add done` adds a completed task to the done list
 
 ### Breaking Changes
 
