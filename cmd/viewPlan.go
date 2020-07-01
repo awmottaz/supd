@@ -29,14 +29,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var force bool
-
-// planCmd represents the plan command
-var planCmd = &cobra.Command{
+// viewPlanCmd represents the viewPlan command
+var viewPlanCmd = &cobra.Command{
 	Use:   "plan",
-	Short: "Set your plan",
-	Long:  `Set your plan`,
-	Args:  cobra.ExactArgs(1),
+	Short: "View your plan",
+	Long:  `View your plan`,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		filename, err := update.GetUpdatesFile()
 		if err != nil {
@@ -52,31 +50,16 @@ var planCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		_, err = collection.FindByDate(update.Today())
+		upd, err := collection.FindByDate(update.Today())
 		if err != nil && err != update.NotFound {
 			cmd.PrintErrln("failed to read today's plan:", err)
 			os.Exit(1)
 		}
 
-		if err != update.NotFound && !force {
-			cmd.PrintErrln("Plan already exists. Use '--force' to overwrite.")
-			os.Exit(1)
-		}
-
-		collection.Add(update.Update{Date: update.Today(), Plan: args[0]})
-
-		err = collection.Commit(filename)
-		if err != nil {
-			cmd.PrintErrln("failed to commit update:", err)
-			os.Exit(1)
-		}
-
-		cmd.Println("plan saved for", update.Today())
+		cmd.Println(upd.Plan)
 	},
 }
 
 func init() {
-	setCmd.AddCommand(planCmd)
-
-	planCmd.Flags().BoolVarP(&force, "force", "f", false, "force overwrite a plan")
+	viewCmd.AddCommand(viewPlanCmd)
 }

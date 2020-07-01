@@ -7,6 +7,7 @@
 - Cleaner, consistent interface
 - `set plan` supports `--force` to overwrite
 - `add done` adds a completed task to the done list
+- `view plan` shows today's plan
 
 ### Breaking Changes
 
@@ -15,7 +16,7 @@
 
 ### Refactored
 
-- Re-implemented using [cobra](https://pkg.go.dev/github.com/spf13/cobra)
+- Re-implemented the app using [cobra](https://pkg.go.dev/github.com/spf13/cobra)
 
 ## v0.4 (2020-06-20)
 
