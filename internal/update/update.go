@@ -16,9 +16,9 @@ type DoneList []string
 func (dl DoneList) String() string {
 	var out strings.Builder
 	for i, did := range dl {
-		fmt.Fprintf(&out, "%d: %s", i, did)
+		fmt.Fprintf(&out, "%d: %s\n", i+1, did)
 	}
-	return out.String()
+	return strings.TrimSuffix(out.String(), "\n")
 }
 
 // An Update is a record of what you plan to do on a given day. The Date must be

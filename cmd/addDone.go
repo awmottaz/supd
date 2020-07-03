@@ -29,13 +29,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var force bool
-
-// setPlanCmd represents the plan command
-var setPlanCmd = &cobra.Command{
-	Use:   "plan",
-	Short: "Set your plan",
-	Long:  `Set your plan`,
+// addDoneCmd represents the done command
+var addDoneCmd = &cobra.Command{
+	Use:   "done",
+	Short: "Add a completed task to your done list",
+	Long:  `Add a completed task to your done list`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		filename, err := update.GetUpdatesFile()
@@ -56,15 +54,15 @@ var setPlanCmd = &cobra.Command{
 		if err != nil && err != update.NotFound {
 			cmd.PrintErrln("failed to read today's plan:", err)
 			os.Exit(1)
+		} else if err == update.NotFound {
+			upd = update.Update{Date: update.Today()}
 		}
 
-		if err != update.NotFound && !force {
-			cmd.PrintErrln("Plan already exists. Use '--force' to overwrite.")
-			os.Exit(1)
+		if upd.Done == nil {
+			upd.Done = update.DoneList{}
 		}
 
-		upd.Date = update.Today() // in case it is new
-		upd.Plan = args[0]
+		upd.Done = append(upd.Done, args[0])
 
 		collection.Add(upd)
 
@@ -74,12 +72,10 @@ var setPlanCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		cmd.Println("plan saved for", update.Today())
+		cmd.Println("completed task saved for", update.Today())
 	},
 }
 
 func init() {
-	setCmd.AddCommand(setPlanCmd)
-
-	setPlanCmd.Flags().BoolVarP(&force, "force", "f", false, "force overwrite a plan")
+	addCmd.AddCommand(addDoneCmd)
 }

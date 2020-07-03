@@ -29,12 +29,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// doneCmd represents the done command
-var doneCmd = &cobra.Command{
+// viewDoneCmd represents the viewDone command
+var viewDoneCmd = &cobra.Command{
 	Use:   "done",
-	Short: "Add a completed task to your done list",
-	Long:  `Add a completed task to your done list`,
-	Args:  cobra.ExactArgs(1),
+	Short: "View your completed tasks",
+	Long:  `View your completed tasks`,
 	Run: func(cmd *cobra.Command, args []string) {
 		filename, err := update.GetUpdatesFile()
 		if err != nil {
@@ -54,28 +53,12 @@ var doneCmd = &cobra.Command{
 		if err != nil && err != update.NotFound {
 			cmd.PrintErrln("failed to read today's plan:", err)
 			os.Exit(1)
-		} else if err == update.NotFound {
-			upd = update.Update{Date: update.Today()}
 		}
 
-		if upd.Done == nil {
-			upd.Done = update.DoneList{}
-		}
-
-		upd.Done = append(upd.Done, args[0])
-
-		collection.Add(upd)
-
-		err = collection.Commit(filename)
-		if err != nil {
-			cmd.PrintErrln("failed to commit update:", err)
-			os.Exit(1)
-		}
-
-		cmd.Println("completed task saved for", update.Today())
+		cmd.Println(upd.Done)
 	},
 }
 
 func init() {
-	addCmd.AddCommand(doneCmd)
+	viewCmd.AddCommand(viewDoneCmd)
 }
