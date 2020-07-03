@@ -21,6 +21,15 @@ func (dl DoneList) String() string {
 	return strings.TrimSuffix(out.String(), "\n")
 }
 
+// PrefixedString prints the DoneList with the given prefix on each line.
+func (dl DoneList) PrefixedString(prefix string) string {
+	var out strings.Builder
+	for i, did := range dl {
+		fmt.Fprintf(&out, "%s%d: %s\n", prefix, i+1, did)
+	}
+	return strings.TrimSuffix(out.String(), "\n")
+}
+
 // An Update is a record of what you plan to do on a given day. The Date must be
 // a string in yyyy-mm-dd format.
 type Update struct {
@@ -47,17 +56,7 @@ func (c Collection) Swap(i, j int) {
 
 func (c Collection) Less(i, j int) bool {
 	d1, d2 := c[i].Date, c[j].Date
-
-	if d1.Year < d2.Year {
-		return true
-	}
-	if d1.Month < d2.Month {
-		return true
-	}
-	if d1.Day < d2.Day {
-		return true
-	}
-	return false
+	return d1.LessThan(d2)
 }
 
 // LoadFrom loads the collection of updates from a JSON file located at filename.
@@ -82,6 +81,25 @@ func (c Collection) FindByDate(date Date) (Update, error) {
 		}
 	}
 	return Update{}, NotFound
+}
+
+// FindPrev finds the most recent update in the collection whose date is before
+// the given date.
+func (c Collection) FindPrev(date Date) (Update, error) {
+	sort.Sort(c)
+	var u Update
+	var found bool
+	for _, update := range c {
+		if update.Date.LessThan(date) {
+			u = update
+			found = true
+		}
+	}
+
+	if !found {
+		return Update{}, NotFound
+	}
+	return u, nil
 }
 
 // Commit writes the collection to filename as formatted JSON, sorted by Date.

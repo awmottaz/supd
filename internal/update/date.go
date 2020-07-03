@@ -41,6 +41,20 @@ func (d *Date) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// LessThan returns true if the date is less than the cmpDate.
+func (d Date) LessThan(cmpDate Date) bool {
+	if d.Year < cmpDate.Year {
+		return true
+	}
+	if d.Month < cmpDate.Month {
+		return true
+	}
+	if d.Day < cmpDate.Day {
+		return true
+	}
+	return false
+}
+
 func timeToDate(t time.Time) Date {
 	var d Date
 
