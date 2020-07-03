@@ -53,17 +53,18 @@ var setPlanCmd = &cobra.Command{
 		}
 
 		upd, err := collection.FindByDate(update.Today())
-		if err != nil && err != update.NotFound {
+		if err == update.NotFound {
+			upd.Date = update.Today()
+		} else if err != nil {
 			cmd.PrintErrln("failed to read today's plan:", err)
 			os.Exit(1)
 		}
 
-		if err != update.NotFound && !force {
+		if upd.Plan != "" && !force {
 			cmd.PrintErrln("Plan already exists. Use '--force' to overwrite.")
 			os.Exit(1)
 		}
 
-		upd.Date = update.Today() // in case it is new
 		upd.Plan = args[0]
 
 		collection.Add(upd)

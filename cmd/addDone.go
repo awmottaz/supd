@@ -51,11 +51,11 @@ var addDoneCmd = &cobra.Command{
 		}
 
 		upd, err := collection.FindByDate(update.Today())
-		if err != nil && err != update.NotFound {
+		if err == update.NotFound {
+			upd = update.Update{Date: update.Today()}
+		} else if err != nil {
 			cmd.PrintErrln("failed to read today's plan:", err)
 			os.Exit(1)
-		} else if err == update.NotFound {
-			upd = update.Update{Date: update.Today()}
 		}
 
 		if upd.Done == nil {
