@@ -9,6 +9,6 @@ func (e Error) Error() string {
 }
 
 const (
-	// NotFound error occurs when an update cannot be found.
-	NotFound = Error("Update not found")
+// NotFound error occurs when an update cannot be found.
+// NotFound = Error("Update not found")
 )

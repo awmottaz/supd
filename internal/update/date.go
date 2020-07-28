@@ -1,25 +1,23 @@
 package update
 
 import (
-	"fmt"
 	"time"
 )
 
 // A Date consists of a year, month, and day.
 type Date struct {
 	Year  int
-	Month int
+	Month time.Month
 	Day   int
 }
 
 func (d Date) String() string {
-	return fmt.Sprintf("%d-%02d-%02d", d.Year, d.Month, d.Day)
+	return time.Date(d.Year, d.Month, d.Day, 12, 0, 0, 0, time.Local).Format("2006-01-02")
 }
 
-// MarshalJSON converts a date to a JSON string.
+// MarshalJSON converts a Date to a JSON string.
 func (d Date) MarshalJSON() ([]byte, error) {
-	s := fmt.Sprintf(`"%s"`, d)
-	return []byte(s), nil
+	return []byte(d.String()), nil
 }
 
 // UnmarshalJSON converts JSON data to a date.
@@ -33,42 +31,40 @@ func (d *Date) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	year, month, day := t.Date()
-	d.Year = year
-	d.Month = int(month)
-	d.Day = day
-
+	d.FromTime(t)
 	return nil
 }
 
-// LessThan returns true if the date is less than the cmpDate.
-func (d Date) LessThan(cmpDate Date) bool {
-	if d.Year < cmpDate.Year {
+// FromTime sets the Date from a time.Time value.
+func (d *Date) FromTime(t time.Time) {
+	year, month, day := t.Date()
+	d.Year = year
+	d.Month = month
+	d.Day = day
+}
+
+// Before returns true if the date occurred before compareDate.
+func (d Date) Before(compareDate Date) bool {
+	if d.Year < compareDate.Year {
 		return true
 	}
-	if d.Month < cmpDate.Month {
+	if d.Month < compareDate.Month {
 		return true
 	}
-	if d.Day < cmpDate.Day {
+	if d.Day < compareDate.Day {
 		return true
 	}
 	return false
 }
 
-func timeToDate(t time.Time) Date {
+// ToDate converts a time.ToDate to a Date.
+func ToDate(t time.Time) Date {
 	var d Date
-
-	year, month, day := t.Date()
-
-	d.Year = year
-	d.Month = int(month)
-	d.Day = day
-
+	d.FromTime(t)
 	return d
 }
 
 // Today returns today's date.
 func Today() Date {
-	now := time.Now().Local()
-	return timeToDate(now)
+	return ToDate(time.Now())
 }

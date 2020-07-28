@@ -23,13 +23,13 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/awmottaz/supd/internal/update"
 	"github.com/spf13/cobra"
 )
+
+var lastN int
 
 // viewUpdateCmd represents the viewUpdate command
 var viewUpdateCmd = &cobra.Command{
@@ -43,42 +43,28 @@ var viewUpdateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		collection := &update.Collection{}
+		agenda := &update.Agenda{}
 
-		err = collection.LoadFrom(filename)
+		err = agenda.LoadFrom(filename)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		upd, err := collection.FindByDate(update.Today())
-		if err != nil && err != update.NotFound {
-			cmd.PrintErrln("failed to read today's plan:", err)
-			os.Exit(1)
+		today := update.Today()
+		upd := agenda.FindByDate(today)
+
+		if upd == nil {
+			cmd.Println("No update for today")
+			return
 		}
 
-		prevUpd, err := collection.FindPrev(update.Today())
-		if err != nil && err != update.NotFound {
-			cmd.PrintErrln("failed to find the previous update:", err)
-			os.Exit(1)
-		}
-
-		var out strings.Builder
-
-		if prevUpd.Date.Day == 0 {
-			out.WriteString("No previous update")
-		} else if prevUpd.Done == nil {
-			out.WriteString(fmt.Sprintf("No completed tasks recorded for %s", prevUpd.Date))
-		} else {
-			out.WriteString(fmt.Sprintf("DID on %s:\n%s", prevUpd.Date, prevUpd.Done.PrefixedString("  ")))
-		}
-
-		out.WriteString(fmt.Sprintf("\n\nPLAN for today, %s:\n  %v", upd.Date, upd.Plan))
-
-		cmd.Println(out.String())
+		cmd.Printf("Update for %v:\n%v", today, upd)
 	},
 }
 
 func init() {
 	viewCmd.AddCommand(viewUpdateCmd)
+
+	viewUpdateCmd.Flags().IntVar(&lastN, "last", -1, "Shows this many recent updates. If set to a negative value, all updates are shown.")
 }

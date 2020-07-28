@@ -7,105 +7,115 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
-	"strings"
 )
 
-// A DoneList is a list of completed tasks.
-type DoneList []string
-
-func (dl DoneList) String() string {
-	var out strings.Builder
-	for i, did := range dl {
-		fmt.Fprintf(&out, "%d: %s\n", i+1, did)
-	}
-	return strings.TrimSuffix(out.String(), "\n")
-}
-
-// PrefixedString prints the DoneList with the given prefix on each line.
-func (dl DoneList) PrefixedString(prefix string) string {
-	var out strings.Builder
-	for i, did := range dl {
-		fmt.Fprintf(&out, "%s%d: %s\n", prefix, i+1, did)
-	}
-	return strings.TrimSuffix(out.String(), "\n")
-}
-
-// An Update is a record of what you plan to do on a given day. The Date must be
-// a string in yyyy-mm-dd format.
+// An Update is a record of a given day.
 type Update struct {
-	Date Date     `json:"date"`
-	Plan string   `json:"plan"`
-	Done DoneList `json:"done"`
+	Plan     `json:"plan"`
+	DoneList `json:"done"`
 }
 
 func (u Update) String() string {
-	return fmt.Sprintf("* Update %s *\nPLAN\n    %s", u.Date, u.Plan)
+	return fmt.Sprintf("PLAN:\n%v\n\nDONE:\n%v", u.Plan, u.DoneList)
 }
 
-// Collection is a list of updates. It implements sort.Interface for []Update
-// based on the Date.
-type Collection []Update
-
-func (c Collection) Len() int {
-	return len(c)
+// WithDate is an Update plus the Date.
+type WithDate struct {
+	Date
+	Plan
+	DoneList
 }
 
-func (c Collection) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
+// Agenda is a mapping from Dates to Updates.
+type Agenda map[Date]Update
+
+// WithDateList is a list of updates with their dates included.
+type WithDateList []WithDate
+
+// FromAgenda converts an Agenda to a List.
+func FromAgenda(a Agenda) WithDateList {
+	var l WithDateList
+	for date, update := range a {
+		l = append(l, WithDate{Plan: update.Plan, DoneList: update.DoneList, Date: date})
+	}
+	return l
 }
 
-func (c Collection) Less(i, j int) bool {
-	d1, d2 := c[i].Date, c[j].Date
-	return d1.LessThan(d2)
+// ByDateChronological implements sort.Sort on a WithDateList, sorting the entries
+// chronologically by Date.
+type ByDateChronological WithDateList
+
+func (b ByDateChronological) Len() int {
+	return len(b)
 }
 
-// LoadFrom loads the collection of updates from a JSON file located at filename.
-func (c *Collection) LoadFrom(filename string) error {
+func (b ByDateChronological) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
+}
+
+func (b ByDateChronological) Less(i, j int) bool {
+	d1, d2 := b[i].Date, b[j].Date
+	return d1.Before(d2)
+}
+
+// LoadFrom loads the Agenda from a JSON file located at filename.
+func (a *Agenda) LoadFrom(filename string) error {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(data, c)
+	err = json.Unmarshal(data, a)
 
 	return err
 }
 
-// FindByDate finds the first update whose date matches date. A NotFound error
-// is returned if such an update is not present in the updateList.
-func (c Collection) FindByDate(date Date) (Update, error) {
-	sort.Sort(c)
-	for _, update := range c {
-		if update.Date == date {
-			return update, nil
+// FindByDate finds the update whose date matches date, or nil if not found.
+func (a Agenda) FindByDate(date Date) *Update {
+	ul := FromAgenda(a)
+	sort.Sort(ByDateChronological(ul))
+	for _, u := range ul {
+		if u.Date == date {
+			return &Update{Plan: u.Plan, DoneList: u.DoneList}
 		}
 	}
-	return Update{}, NotFound
+	return nil
 }
 
-// FindPrev finds the most recent update in the collection whose date is before
-// the given date.
-func (c Collection) FindPrev(date Date) (Update, error) {
-	sort.Sort(c)
-	var u Update
-	var found bool
-	for _, update := range c {
-		if update.Date.LessThan(date) {
-			u = update
-			found = true
+// FindPrev finds the most recent update whose date is before the given date,
+// returning nil if none exists.
+func (a Agenda) FindPrev(date Date) *WithDate {
+	ul := FromAgenda(a)
+	sort.Sort(ByDateChronological(ul))
+
+	for _, update := range ul {
+		if update.Date.Before(date) {
+			return &update
 		}
 	}
 
-	if !found {
-		return Update{}, NotFound
-	}
-	return u, nil
+	return nil
 }
 
-// Commit writes the collection to filename as formatted JSON, sorted by Date.
-func (c Collection) Commit(filename string) error {
-	sort.Sort(c)
-	data, err := json.Marshal(c)
+// FindLastN returns the most recent n updates from the collection, up to the
+// entire collection.
+func (a Agenda) FindLastN(n int) []WithDate {
+	ul := FromAgenda(a)
+	sort.Sort(ByDateChronological(ul))
+	num := minInt(len(ul), n)
+	return ul[len(ul)-num:]
+}
+
+func minInt(m, n int) int {
+	if m < n {
+		return m
+	}
+	return n
+}
+
+// WriteTo writes the Agenda to filename as formatted JSON.
+func (a *Agenda) WriteTo(filename string) error {
+	data, err := json.Marshal(a)
 	if err != nil {
 		return err
 	}
@@ -130,20 +140,16 @@ func (c Collection) Commit(filename string) error {
 	return nil
 }
 
-// Add adds the update to a collection. If the collection already includes an
-// update for the same date as u, it is overwritten with the new update.
-func (c *Collection) Add(update Update) {
-	n := -1
-	*c = append(*c, update)
+// AddUpdate adds an update for a given date. If overwrite is true, then it will
+// overwrite an existing update if present. Returns an error if an update for
+// this date exists and overwrite is false.
+func (a *Agenda) AddUpdate(date Date, update Update, overwrite bool) error {
+	_, ok := (*a)[date]
 
-	for i, u := range *c {
-		if u.Date == update.Date {
-			n = i
-			break
-		}
+	if !ok && !overwrite {
+		return fmt.Errorf("cannot overwrite existing update for date %v", date)
 	}
 
-	if n >= 0 && n+1 < len(*c) {
-		*c = append((*c)[:n], (*c)[n+1:]...)
-	}
+	(*a)[date] = update
+	return nil
 }
