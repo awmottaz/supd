@@ -25,7 +25,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/awmottaz/supd/internal/update"
+	"github.com/awmottaz/supd/internal/agenda"
 	"github.com/spf13/cobra"
 )
 
@@ -36,43 +36,22 @@ var addDoneCmd = &cobra.Command{
 	Long:  `Add a completed task to your done list`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		filename, err := update.GetUpdatesFile()
+		a, err := agenda.LoadFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		collection := &update.Collection{}
+		today := agenda.Today()
+		a.AddDone(today, args[0])
 
-		err = collection.LoadFrom(filename)
+		err = a.WriteFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		upd, err := collection.FindByDate(update.Today())
-		if err == update.NotFound {
-			upd = update.Update{Date: update.Today()}
-		} else if err != nil {
-			cmd.PrintErrln("failed to read today's plan:", err)
-			os.Exit(1)
-		}
-
-		if upd.Done == nil {
-			upd.Done = update.DoneList{}
-		}
-
-		upd.Done = append(upd.Done, args[0])
-
-		collection.Add(upd)
-
-		err = collection.Commit(filename)
-		if err != nil {
-			cmd.PrintErrln("failed to commit update:", err)
-			os.Exit(1)
-		}
-
-		cmd.Println("completed task saved for", update.Today())
+		cmd.Println("Completed task saved")
 	},
 }
 

@@ -25,7 +25,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/awmottaz/supd/internal/update"
+	"github.com/awmottaz/supd/internal/agenda"
 	"github.com/spf13/cobra"
 )
 
@@ -35,27 +35,17 @@ var viewDoneCmd = &cobra.Command{
 	Short: "View your completed tasks",
 	Long:  `View your completed tasks`,
 	Run: func(cmd *cobra.Command, args []string) {
-		filename, err := update.GetUpdatesFile()
+		a, err := agenda.LoadFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		collection := &update.Collection{}
+		today := agenda.Today()
 
-		err = collection.LoadFrom(filename)
-		if err != nil {
-			cmd.PrintErrln(err)
-			os.Exit(1)
-		}
+		upd := (*a)[today]
 
-		upd, err := collection.FindByDate(update.Today())
-		if err != nil && err != update.NotFound {
-			cmd.PrintErrln("failed to read today's plan:", err)
-			os.Exit(1)
-		}
-
-		cmd.Println(upd.Done)
+		cmd.Printf("Tasks completed today (%v)\n\n%v\n", today, upd.DoneList)
 	},
 }
 

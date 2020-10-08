@@ -25,7 +25,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/awmottaz/supd/internal/update"
+	"github.com/awmottaz/supd/internal/agenda"
 	"github.com/spf13/cobra"
 )
 
@@ -36,27 +36,20 @@ var viewPlanCmd = &cobra.Command{
 	Long:  `View your plan`,
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		filename, err := update.GetUpdatesFile()
+		a, err := agenda.LoadFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		collection := &update.Collection{}
+		today := agenda.Today()
 
-		err = collection.LoadFrom(filename)
-		if err != nil {
-			cmd.PrintErrln(err)
-			os.Exit(1)
+		upd := (*a)[today]
+		if len(upd.Plan) == 0 {
+			upd.Plan = "<no plan set>"
 		}
 
-		upd, err := collection.FindByDate(update.Today())
-		if err != nil && err != update.NotFound {
-			cmd.PrintErrln("failed to read today's plan:", err)
-			os.Exit(1)
-		}
-
-		cmd.Println(upd.Plan)
+		cmd.Printf("Plan for today (%v)\n\n%v\n", today, upd.Plan)
 	},
 }
 

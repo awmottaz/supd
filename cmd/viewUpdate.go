@@ -25,7 +25,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/awmottaz/supd/internal/update"
+	"github.com/awmottaz/supd/internal/agenda"
 	"github.com/spf13/cobra"
 )
 
@@ -37,29 +37,17 @@ var viewUpdateCmd = &cobra.Command{
 	Short: "View your update",
 	Long:  `View your update`,
 	Run: func(cmd *cobra.Command, args []string) {
-		filename, err := update.GetUpdatesFile()
+		a, err := agenda.LoadFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		agenda := &update.Agenda{}
+		today := agenda.Today()
 
-		err = agenda.LoadFrom(filename)
-		if err != nil {
-			cmd.PrintErrln(err)
-			os.Exit(1)
-		}
+		upd := (*a)[today]
 
-		today := update.Today()
-		upd := agenda.FindByDate(today)
-
-		if upd == nil {
-			cmd.Println("No update for today")
-			return
-		}
-
-		cmd.Printf("Update for %v:\n%v", today, upd)
+		cmd.Printf("Update for today (%v)\n\n%v\n", today, upd)
 	},
 }
 

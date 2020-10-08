@@ -25,7 +25,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/awmottaz/supd/internal/update"
+	"github.com/awmottaz/supd/internal/agenda"
 	"github.com/spf13/cobra"
 )
 
@@ -38,44 +38,29 @@ var setPlanCmd = &cobra.Command{
 	Long:  `Set your plan`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		filename, err := update.GetUpdatesFile()
+		a, err := agenda.LoadFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		collection := &update.Collection{}
+		today := agenda.Today()
 
-		err = collection.LoadFrom(filename)
+		upd, ok := (*a)[today]
+		if ok && len(upd.Plan) > 0 && !force {
+			cmd.PrintErrln("Plan already set for today. Use '--force' to overwrite.")
+			os.Exit(1)
+		}
+
+		a.SetPlan(today, agenda.Plan(args[0]))
+
+		err = a.WriteFile(updatesFile)
 		if err != nil {
 			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		upd, err := collection.FindByDate(update.Today())
-		if err == update.NotFound {
-			upd.Date = update.Today()
-		} else if err != nil {
-			cmd.PrintErrln("failed to read today's plan:", err)
-			os.Exit(1)
-		}
-
-		if upd.Plan != "" && !force {
-			cmd.PrintErrln("Plan already exists. Use '--force' to overwrite.")
-			os.Exit(1)
-		}
-
-		upd.Plan = args[0]
-
-		collection.Add(upd)
-
-		err = collection.Commit(filename)
-		if err != nil {
-			cmd.PrintErrln("failed to commit update:", err)
-			os.Exit(1)
-		}
-
-		cmd.Println("plan saved for", update.Today())
+		cmd.Println("Plan saved")
 	},
 }
 

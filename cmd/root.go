@@ -26,6 +26,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -36,6 +37,8 @@ import (
 var cfgFile string
 var version = "<dev>"
 var hash = "<dev>"
+
+var updatesFile = ""
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -68,6 +71,12 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	uf, err := getUpdatesFile()
+	if err != nil {
+		panic(err)
+	}
+	updatesFile = uf
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -94,4 +103,18 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func getUpdatesFile() (string, error) {
+	envPath := os.Getenv("SUPD_FILE")
+	if envPath != "" {
+		return envPath, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(home, "supd.json"), nil
 }

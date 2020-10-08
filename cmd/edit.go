@@ -27,7 +27,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/awmottaz/supd/internal/update"
 	"github.com/spf13/cobra"
 )
 
@@ -56,25 +55,19 @@ func init() {
 }
 
 func runEdit(cmd *cobra.Command, args []string) {
-	filepath, err := update.GetUpdatesFile()
-	if err != nil {
-		cmd.PrintErrln(err)
-		os.Exit(1)
-	}
-
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		editor = "vim"
 	}
 
-	fmt.Printf("Opening %s with %s...\n", filepath, editor)
+	fmt.Printf("Opening %s with %s...\n", updatesFile, editor)
 	editorPath, err := exec.LookPath(editor)
 	if err != nil {
 		cmd.PrintErrln(err)
 		os.Exit(1)
 	}
 
-	editorCmd := exec.Command(editorPath, filepath)
+	editorCmd := exec.Command(editorPath, updatesFile)
 	editorCmd.Stdin = cmd.InOrStdin()
 	editorCmd.Stdout = cmd.OutOrStdout()
 	editorCmd.Stderr = cmd.ErrOrStderr()
